@@ -1,0 +1,23 @@
+/* já falei que eu não gosto de escrever css?
+ * eu não gosto de escrever css.
+ */
+
+.center {
+  text-align: center;
+}
+
+select {
+  max-width: 20em;
+  margin-bottom: 0;
+}
+
+#mvn {
+  display: none;
+}
+
+#programa {
+  width: 75%;
+  height: 20em;
+  font-family: monospace;
+  font-size: 150%;
+}

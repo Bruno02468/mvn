@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Simulador Web da MVN">
+    <meta name="author" content="Bruno Borges Paschoalinoto">
+    <title>Simulador Web da MVN</title>
+    <link href="//fonts.googleapis.com/css?family=raleway:400,300,600"
+    rel="stylesheet" type="text/css">
+    <link rel="stylesheet" type="text/css"
+    href="//cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
+    <link rel="stylesheet" type="text/css"
+    href="//cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css">
+    <link rel="stylesheet" href="interface.css">
+  </head>
+  <body>
+    <div class="container center">
+      <div class="row">
+        <h2>Simulador Web para a MVN</h2>
+        <h6>
+          Esta página é uma alternativa ao simulador distribuído pelo PCS para
+          rodar programas para a MVN deles.<br>
+          <br>
+          É uma implementação
+          <a href="//github.com/Bruno02468/mvn" target="_blank">
+            totalmente aberta
+          </a>
+          da descrição que eles deram, prourando seguir à risca os detalhes de
+          funcionamento para dar quase certeza de que a simulação será precisa.
+          <br>
+          <br>
+          Eu também procurei implementar mensagens de erro mais descritivas, e
+          uma interface gráfica mais rica para facilitar o debug.
+        </h6>
+      </div>
+      <br>
+      <div id="loader">
+        Para começar, cole seu programa abaixo!<br>
+        <br>
+        <textarea id="programa"></textarea><br>
+        <br>
+        <br>
+        Número de dispositivos de entrada:
+        <input type="number" min="0" step="1" value="3" id="nin"></input>
+        <br>
+        <br>
+        Número de dispositivos de saída:
+        <input type="number" min="0" step="1" value="3" id="nout"></input>
+        <br>
+        <br>
+        <button onclick="carregar();">Carregar programa!</button><br>
+      </div>
+
+      <div id="mvn">
+        <div class="row topbar">
+          <button onclick="step();">Executar instrução atual</button>
+          <button onclick="restart();">Reiniciar a execução</button>
+        </div>
+        
+        <div class="row data">
+          <div class="six columns">
+            <table class="memoria">
+              <thead>
+                <th>Endereço</th>
+                <th>Valor</th>
+              </thead>
+              <tbody id="memoria"></tr>
+            </table>
+          </div>
+
+          <div class="six columns sidebar">
+            Dispositivo de entrada: <select id="ins"></select>
+            <br>
+            <br>
+            Dados na fila de entrada:
+            <textarea id="in_disp" readonly></textarea>
+            <br>
+            <br>
+            <button onclick="in_hex();">Inserir valor hexadecimal</button>
+            <button onclick="in_dec();">Inserir valor decimal</button>
+            <button onclick="clr_in();">Limpar</button>
+            <br>
+            Mostrar como:
+            <select id="in_format" onchange="update_entrada();">
+              <option value="hexa">Hexadecimal</option>
+              <option value="decimal">Decimal</option>
+            </select><br>
+            <br>
+            <hr>
+            <br>
+            Dispositivo de saída: <select id="outs"></select> 
+            <br>
+            <br>
+            Dados na saída:
+            <textarea id="out_disp" readonly></textarea>
+            <br>
+            <br>
+            <button onclick="clr_out()">Limpar</button><br>
+            Mostrar como:
+            <select id="out_format" onchange="update_saida();">
+              <option value="hexa">Hexadecimal</option>
+              <option value="decimal">Decimal</option>
+              <option value="ASCII">ASCII</option>
+            </select><br>
+          </div>
+        </div>
+
+
+      </div>
+      <br>
+      <br>
+      <i>
+        Se encontrar qualquer problema ou bug, <b>reporte</b> para
+        <a href="mailto:bruno@oisumida.rs">bruno@oisumida.rs</a>
+        ou via issue no GitHub.
+        <br>
+        Se você estiver interessado no código, ele é aberto sob a licença
+        MIT, e está
+        <a href="https://github.com/Bruno02468/lista_fuvest"
+        target="_blank">num repositório do GitHub</a>!
+        <br>
+        <br>
+        © 2019
+        <a href="//oisumida.rs" target="_blank">Bruno Borges Paschoalinoto</a>
+        <br>
+        Alguns direitos reservados!
+      </i>
+      <br>
+      <br>
+    </div>
+    <script src="scriptoso.js"></script>
+  </body>
+</html>

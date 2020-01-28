@@ -1,5 +1,6 @@
 // digitado em tipo, um dia, por bruno borges paschoalinoto
 // para uso por alunos da poli
+// contém código que determina o funcionamento interno da MVN
 // licença MIT
 // não repara a bagunça
 
@@ -10,7 +11,7 @@
 // e caso alguma pobre alma resolva ler meu código...
 
 // dispositivo de entrada genérico, associado a uma array
-function entrada_generica() {
+function entrada_generica(update_callback) {
   // assegurar o elemento de leitura
   this.mem = [];
 
@@ -22,85 +23,64 @@ function entrada_generica() {
   // ler um byte da fila de leitura
   this.ler = function() {
     if (!this.fila()) {
-      return new word(2);
+      return new word(4);
     }
-    let b = new word(2, this.mem[0]);
+    let b = new word(4, this.mem[0]);
     this.mem = this.mem.slice(1);
-    return b || new word(2);
+    update_callback(this.mem);
+    return b || new word(4);
   };
 
   // limpar a fila de leitura
   this.limpar = function() {
     this.mem = [];
+    update_callback(this.mem);
   };
 
   // inserir um byte na fila de leitura
   this.inserir = function(b) {
-    this.mem.push(word(2, b));
+    this.mem.push(word(4, b));
+    update_callback(this.mem);
   };
 
   // inserir vários bytes
   this.inserir_varios = function(arr) {
     for (b of arr) this.inserir(b);
+    update_callback(this.mem);
+  };
+
+  // converter em string hexadecimal
+  this.hexa = function() {
+    return mem.reduce((str, n) => str + n.to_hex() + " ", "").trim();
+  };
+
+  // converter em string decimal
+  this.decimal = function() {
+    return mem.reduce((str, n) => str + n.to_dec() + " ", "").trim();
   };
 }
 
-// dispositivo de entrada combinado entre uma textarea, uns botões, etc.
-function init_entrada_combinada(ta_hex_display, ta_text_input, btn_hex_input,
-                                btn_dec_input, btn_text_input) {
-  let backend = new entrada_generica();
-
-  // o que fazer quando querem inserir um byte hexa
-  btn_hex_input.addEventListener("click", function() {
-    let s = NaN;
-    do {
-      s = parseInt(prompt("Insira um byte hexadecimal, como 00, 0A, F0, FF, 4B,"
-                          + " etc.", "00"), 16);
-    } while (isNaN(s));
-    backend.inserir(s);
-  });
-
-  // o que fazer quando querem inserir um byte decimal
-  btn_hex_input.addEventListener("click", function() {
-    let s = -1;
-    do {
-      s = parseInt(prompt("Insira um número de 0 a 255.", "00"), 10);
-    } while (isNaN(s) || s > 255 || s < 0);
-    backend.inserir(s);
-  });
-
-  // o que fazer quando querem inserir bytes a partir de texto
-  btn_text_input.addEventListener("click", function() {
-    while (ta_hex_display.value.length) {
-      // consumir um caractere
-      let c = ta_hex_display.value.charCodeAt(0);
-      ta_hex_display.value = ta_hex_display.value.splice(1);
-      // converter ele para uma string hexa, e disso para lista de bytes
-      let bytes = hexpad(Number(c).toString(16));
-      backend.inserir_varios(bytes);
-    }
-  });
-
-  return backend;
-}
 
 // dispositivo de saída genérico
-function saida_generica() {
+function saida_generica(update_callback) {
   this.mem = [];
 
   // limpar a saída
   this.limpar = function() {
     this.mem = [];
+    update_callback(this.mem);
   };
 
   // inserir um byte na saída
   this.inserir = function(b) {
-    this.mem.push(word(b, 2));
+    this.mem.push(new word(4, b));
+    update_callback(this.mem);
   };
 
   // inserir vários bytes
   this.inserir_varios = function(arr) {
     this.mem += arr;
+    update_callback(this.mem);
   };
 
   // converter em string hexadecimal
@@ -118,48 +98,6 @@ function saida_generica() {
     return mem.reduce((str, n) => str + String.fromCharCode(n), "");
   };
 
-}
-
-// dispositivo de saída usando elementos HTML
-function init_saida_combinada(ta_out, btn_clear, sel_type) {
-  let backend = saida_generica();
-
-  backend.update = function() {
-    switch (sel_type.value) {
-      case "hexa":
-        ta_out.innerText = backend.hexa();
-        break;
-      case "decimal":
-        ta_out.innerText = backend.decimal();
-        break;
-      case "ascii":
-        ta_out.innerText = backend.ascii();
-        break;
-    }
-  };
-
-  function bind_update(obj, fname) {
-    let newname = "postbind_" + fname;
-    obj[newname] = obj[fname];
-    obj[fname] = function() {
-      obj[newname]();
-      obj.update();
-    }
-  }
-
-  bind_update(backend, "limpar");
-  bind_update(backend, "inserir");
-  bind_update(backend, "inserir_varios");
-
-  btn_clear.addEventListener("click", function() {
-    backend.limpar();
-  });
-
-  sel_type.addEventListener("change", function() {
-    backend.update();
-  });
-
-  return backend;
 }
 
 // aqui, vamos começar a implementar a mvn de fato.
@@ -194,7 +132,8 @@ function mvn(programa_inicial, entradas, saidas) {
       "MDR": new word(4),
       "IC": new word(4),
       "IR": new word(4),
-      "AC": new word(4)
+      "AC": new word(4),
+      "RA": new word(4)
     };
     for (entrada of entradas) {
       entrada.limpar(); 
@@ -264,7 +203,13 @@ function mvn(programa_inicial, entradas, saidas) {
 
   // executar uma instrução
   this.executar = function() {
+    // não podemos executar se estivermos em erro
+    if (this.estado == "ERRO") {
+      alert("A máquina não pode continuar, pois está em estado de erro.");
+      return;
+    }
     // pegar a instrução atual e atualizar os registradores
+    this.reg("IR").set(this.acesso_seguro(this.reg("IC").us()));
     let op = (this.ureg("IR") & 0xF000) >> 3;
     let oi = new word(4, this.ureg("IR") & 0x0FFF);
     switch (op) {
@@ -311,15 +256,69 @@ function mvn(programa_inicial, entradas, saidas) {
         this.reg("AC").idiv(memoria[oi]);
         this.reg("IC").add(2);
         break;
-
-
-
+      case 0x8:
+        // colocar memória pro acumulador
+        let mem = this.acesso_seguro(oi.us());
+        this.reg("AC").set(mem);
+        this.reg("IC").add(2);
+        break;
+      case 0x9:
+        // colocar acumulador pra memória
+        let mem = this.acesso_seguro(oi.us());
+        mem.set(this.reg("AC"));
+        this.reg("IC").add(2);
+        break;
+      case 0xA:
+        // RA recebe IC, IC recebe OI
+        this.reg("RA").set(this.reg("IC"));
+        this.reg("IC").set(this.reg("OI"));
+        break;
+      case 0xB:
+        // AC recebe memória, IC recebe RA
+        let mem = this.acesso_seguro(oi.us());
+        this.reg("AC").set(mem);
+        this.reg("IC").set(this.reg("RA"));
+        break;
+      case 0xC:
+        // pausar e aguardar continuação
+        this.estado = "PARADA";
+        this.reg("IC").set(oi);
+        break;
+      case 0xD:
+        // ler dados da entrada e continuar
+        let disp = oi.us();
+        if (disp >= this.entradas.length) {
+          this.fatal("Tentativa de ler um byte da entrada #" + disp + ", mas só"
+                     + " existe até a #" + this.entradas.length + "!");
+        } else {
+          let entrada = this.entradas[disp];
+          if (entrada.fila()) {
+            this.reg("AC").set(entrada.ler());
+            this.reg("IC").add(2);
+          } else {
+            alert("A instrução atual exige ler do dispositivo de entrada #"
+                  + disp + "!");
+          }
+        }
+        break;
+      case 0xE:
+        let disp = oi.us();
+        if (disp >= this.saidas.length) {
+          this.fatal("Tentativa de botar um byte na saída #" + disp + ", mas só"
+                     + " existe até a #" + this.entradas.length + "!");
+        } else {
+          let saida = this.saida[disp];
+          saida.inserir(disp);
+          this.reg("IC").add(2);
+        }
+        break;
+      case 0xF:
+        this.reg("IC").add(2);
+        break;
     }
   };
 
   this.entradas = entradas;
   this.saidas = saidas;
   this.carregar(programa_inicial);
-
-}
-    
+} 

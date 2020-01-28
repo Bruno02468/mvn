@@ -1,4 +1,8 @@
-// implementação da aritmética para evitar confusão
+// digitado em tipo, um dia, por bruno borges paschoalinoto
+// para uso por alunos da poli
+// contém a implementação da aritmética para evitar confusão
+// licença MIT
+// não repara a bagunça
 
 // converte uma string hexa para lista de bytes
 function hexpad(s) {
