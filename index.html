@@ -66,13 +66,16 @@
 
         <hr>
         <div class="row">
-          <div class="four columns">
+          <div class="three columns">
             Estado atual da máquina: <span id="estado"></span>
           </div>
-          <div class="four columns">
+          <div class="three columns">
             <button onclick="step();">Executar instrução</button>
           </div>
-          <div class="four columns">
+          <div class="three columns">
+            <button onclick="toggle_auto(this);">Executar a 10 Hz</button>
+          </div>
+          <div class="three columns">
             <button onclick="restart();">Reiniciar a execução</button>
           </div>
         </div>

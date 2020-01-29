@@ -220,3 +220,15 @@ function restart() {
   maquina.restart();
   atualizar_tudo();
 }
+
+let looper = null;
+function toggle_auto(btn) {
+  if (!looper) {
+    looper = setInterval(step, 100);
+    btn.innerText = "Parar";
+  } else {
+    clearInterval(looper);
+    looper = null;
+    btn.innerText = "Executar a 10 Hz";
+  }
+}

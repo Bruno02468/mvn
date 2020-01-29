@@ -205,11 +205,12 @@ function mvn(programa_inicial, entradas, saidas, versao) {
       alert("A máquina não pode continuar, pois está em estado de erro.");
       return;
     }
+    this.estado = "EXECUTANDO";
     // pegar a instrução atual e atualizar os registradores
     this.reg("IR").set(this.acesso_seguro(this.reg("IC").us()));
     let op = (this.ureg("IR") & 0xF000) >> 12;
     let oi = new word(4, this.ureg("IR") & 0x0FFF);
-    let memoi = this.acesso_seguro(oi.us());
+    let memoi = () => this.acesso_seguro(oi.us());
     switch (op) {
       case 0x0:
         // salto incondicional
@@ -232,32 +233,32 @@ function mvn(programa_inicial, entradas, saidas, versao) {
         break;
       case 0x4:
         // soma
-        this.reg("AC").add(memoi);
+        this.reg("AC").add(memoi());
         this.reg("IC").add(2);
         break;
       case 0x5:
         // subtração
-        this.reg("AC").sub(memoi);
+        this.reg("AC").sub(memoi());
         this.reg("IC").add(2);
         break;
       case 0x6:
         // multiplicação
-        this.reg("AC").mult(memoi);
+        this.reg("AC").mult(memoi());
         this.reg("IC").add(2);
         break;
       case 0x7:
         // divisão
-        this.reg("AC").idiv(memoi);
+        this.reg("AC").idiv(memoi());
         this.reg("IC").add(2);
         break;
       case 0x8:
         // colocar memória pro acumulador
-        this.reg("AC").set(memoi);
+        this.reg("AC").set(memoi());
         this.reg("IC").add(2);
         break;
       case 0x9:
         // colocar acumulador pra memória
-        memoi.set(this.reg("AC"));
+        memoi().set(this.reg("AC"));
         this.reg("IC").add(2);
         break;
       case 0xA:
@@ -267,8 +268,8 @@ function mvn(programa_inicial, entradas, saidas, versao) {
           this.reg("IC").set(oi);
         } else {
           // MEM[OI] recebe IC+1, IC recebe OI+1
-          memoi.set(this.reg("IC"));
-          memoi.add(2);
+          memoi().set(this.reg("IC"));
+          memoi().add(2);
           this.reg("IC").set(oi);
           this.reg("IC").add(2);
         }
@@ -276,16 +277,16 @@ function mvn(programa_inicial, entradas, saidas, versao) {
       case 0xB:
         if (versao == 2) {
           // AC recebe memória, IC recebe RA
-          this.reg("AC").set(memoi);
+          this.reg("AC").set(memoi());
           this.reg("IC").set(this.reg("RA"));
         } else {
           // IC recebe MEM[OI]
-          this.reg("IC").set(memoi);
+          this.reg("IC").set(memoi());
         }
         break;
       case 0xC:
         // pausar e aguardar continuação
-        this.estado = "PARADA";
+        this.estado = "AGUARDANDO";
         this.reg("IC").set(oi);
         break;
       case 0xD:
@@ -302,6 +303,7 @@ function mvn(programa_inicial, entradas, saidas, versao) {
           } else {
             alert("A instrução atual exige ler do dispositivo de entrada #"
                   + idisp + "!");
+            this.estado = "AGUARDANDO";
           }
         }
         break;
