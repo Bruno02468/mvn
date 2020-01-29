@@ -21,3 +21,7 @@ select {
   font-family: monospace;
   font-size: 150%;
 }
+
+#estado {
+  font-weight: bold;
+}

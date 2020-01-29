@@ -48,14 +48,17 @@ function word(order, value) {
   this.true_unsigned = 0;
 
   // limites permitidos
-  this.max_unsigned = 2**order - 1;
-  this.min_signed = -2**(order - 1);
-  this.max_signed = 2**(order - 1) - 1;
-  this.unsigned_cycle = 2**order;
-  this.signed_cycle = 2**(order - 1);
+  this.max_unsigned = 16**order - 1;
+  this.min_signed = -(16**order)/2;
+  this.max_signed = (16**order)/2 - 1;
+  this.unsigned_cycle = 16**order;
+  this.signed_cycle = (16**order)/2;
+
+  // número de nibbles
+  this.order = order;
 
   // interpretar o valor como complemento de dois
-  this.tc = () => us_tc(this.true_unsigned, order);
+  this.tc = () => us_tc(this.true_unsigned, order*4);
 
   // retornar o valor numérico sem sinal
   this.us = () => this.true_unsigned;
@@ -107,7 +110,7 @@ function word(order, value) {
 
   // carregar um valor numérico
   this.set = function(v) {
-    if ("true_unsigned" in v) {
+    if (typeof v == "object") {
       this.set(v.us());
     } else {
       this.true_unsigned = v;
@@ -142,26 +145,29 @@ function word(order, value) {
   };
 
   // converter para string decimal, com sinal
-  this.to_dec_tc = function() {
-    let s = Number(this.true_unsigned).toString(10);
-    while (s.length <= this.order) s = s.replace(/-/, "-0");
-    return s;
+  this.to_dec_tc = () => Number(this.tc()).toString(10);
+
+  // retorna o caractere correspondente a essa palavra
+  this.to_char = function() {
+    var s = String.fromCharCode(this.us()).trim();
+    if (/[\x00-\x08\x0E-\x1F\x80-\xFF]/.test(s)) return "<invisível>";
+    else return s;
   };
 
   // bitwise AND
-  this.and = funcion(mask) {
+  this.and = function(mask) {
     this.true_unsigned &= mask;
     this.sane();
   };
 
   // bitwise OR
-  this.or = funcion(mask) {
+  this.or = function(mask) {
     this.true_unsigned |= mask;
     this.sane();
   };
 
   // bitwise XOR
-  this.xor = funcion(mask) {
+  this.xor = function(mask) {
     this.true_unsigned %= mask;
     this.sane();
   };

@@ -52,23 +52,54 @@
         <button onclick="carregar();">Carregar programa!</button><br>
       </div>
 
-      <div id="mvn">
-        <div class="row topbar">
-          <button onclick="step();">Executar instrução atual</button>
-          <button onclick="restart();">Reiniciar a execução</button>
+      <span id="mvn">
+
+        <hr>
+        <div class="row">
+          <div class="four columns">
+            Estado atual da máquina: <span id="estado"></span>
+          </div>
+          <div class="four columns">
+            <button onclick="step();">Executar instrução</button>
+          </div>
+          <div class="four columns">
+            <button onclick="restart();">Reiniciar a execução</button>
+          </div>
         </div>
-        
-        <div class="row data">
-          <div class="six columns">
-            <table class="memoria">
+
+        <hr>
+
+        <div class="row">
+          <div class="six columns regs">
+            Valores dos registradores:<br>
+            <table class="tabela_registradores">
+              <thead>
+                <th>Nome</th>
+                <th>Valor hexa</th>
+                <th>Valor decimal</th>
+                <th>Valor texto</th>
+              </thead>
+              <tbody id="registradores"></tr>
+            </table>
+          </div>
+
+          <div id="six columns">
+            <table class="tabela_memoria">
               <thead>
                 <th>Endereço</th>
-                <th>Valor</th>
+                <th>Valor hexa</th>
+                <th>Valor decimal</th>
+                <th>Valor texto</th>
               </thead>
               <tbody id="memoria"></tr>
             </table>
           </div>
 
+        </span>
+
+        <hr>
+        
+        <div class="row">
           <div class="six columns sidebar">
             Dispositivo de entrada: <select id="ins"></select>
             <br>
@@ -87,8 +118,8 @@
               <option value="decimal">Decimal</option>
             </select><br>
             <br>
-            <hr>
-            <br>
+          </div>
+          <div class="six columns sidebar">
             Dispositivo de saída: <select id="outs"></select> 
             <br>
             <br>
@@ -106,6 +137,7 @@
           </div>
         </div>
 
+        <hr>
 
       </div>
       <br>
@@ -129,6 +161,8 @@
       <br>
       <br>
     </div>
-    <script src="scriptoso.js"></script>
+    <script src="aritmetica.js"></script>
+    <script src="mvn.js"></script>
+    <script src="interact.js"></script>
   </body>
 </html>

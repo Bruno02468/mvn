@@ -11,7 +11,7 @@
 // e caso alguma pobre alma resolva ler meu código...
 
 // dispositivo de entrada genérico, associado a uma array
-function entrada_generica(update_callback) {
+function entrada_generica() {
   // assegurar o elemento de leitura
   this.mem = [];
 
@@ -27,81 +27,75 @@ function entrada_generica(update_callback) {
     }
     let b = new word(4, this.mem[0]);
     this.mem = this.mem.slice(1);
-    update_callback(this.mem);
     return b || new word(4);
   };
 
   // limpar a fila de leitura
   this.limpar = function() {
     this.mem = [];
-    update_callback(this.mem);
   };
 
   // inserir um byte na fila de leitura
   this.inserir = function(b) {
     this.mem.push(word(4, b));
-    update_callback(this.mem);
   };
 
   // inserir vários bytes
   this.inserir_varios = function(arr) {
     for (b of arr) this.inserir(b);
-    update_callback(this.mem);
   };
 
   // converter em string hexadecimal
   this.hexa = function() {
-    return mem.reduce((str, n) => str + n.to_hex() + " ", "").trim();
+    return this.mem.reduce((str, n) => str + n.to_hex() + " ", "").trim();
   };
 
   // converter em string decimal
   this.decimal = function() {
-    return mem.reduce((str, n) => str + n.to_dec() + " ", "").trim();
+    return this.mem.reduce((str, n) => str + n.to_dec() + " ", "").trim();
   };
 }
 
 
 // dispositivo de saída genérico
-function saida_generica(update_callback) {
+function saida_generica() {
   this.mem = [];
 
   // limpar a saída
   this.limpar = function() {
     this.mem = [];
-    update_callback(this.mem);
   };
 
   // inserir um byte na saída
   this.inserir = function(b) {
     this.mem.push(new word(4, b));
-    update_callback(this.mem);
   };
 
   // inserir vários bytes
   this.inserir_varios = function(arr) {
     this.mem += arr;
-    update_callback(this.mem);
   };
 
   // converter em string hexadecimal
   this.hexa = function() {
-    return mem.reduce((str, n) => str + n.to_hex() + " ", "").trim();
+    return this.mem.reduce((str, n) => str + n.to_hex() + " ", "").trim();
   };
 
   // converter em string decimal
   this.decimal = function() {
-    return mem.reduce((str, n) => str + n.to_dec() + " ", "").trim();
+    return this.mem.reduce((str, n) => str + n.to_dec() + " ", "").trim();
   };
 
   // converter em texto ascii
   this.ascii = function() {
-    return mem.reduce((str, n) => str + String.fromCharCode(n), "");
+    return this.mem.reduce((str, n) => str + String.fromCharCode(n), "");
   };
-
 }
 
 // aqui, vamos começar a implementar a mvn de fato.
 function mvn(programa_inicial, entradas, saidas) {
+  this.memoria = {};
+  this.memoria_original = {};
 
   this.fatal = function(msg) {
     alert("Um erro fatal impede a continuidade da execução:\n\n" + msg);
@@ -125,7 +119,7 @@ function mvn(programa_inicial, entradas, saidas) {
 
   // reiniciar o programa atual
   this.restart = function() {
-    this.memoria = this.copia_memoria(memoria_original);
+    this.memoria = this.copia_memoria(this.memoria_original);
     this.estado = "EXECUTANDO"
     this.registradores = {
       "MAR": new word(4),
@@ -159,7 +153,8 @@ function mvn(programa_inicial, entradas, saidas) {
     // primeiro, remover todos os comentários
     programa = programa.replace(/;.*/g, "");
     // agora, carregar a string de nibbles
-    let nibbles = programa.reduce((str, c) => str + (nibble(c) ? c : ""), "");
+    let nibbles = programa.split("").reduce((str, c) => str
+                                            + (nibble(c) ? c : ""), "");
     if (nibbles.length % 8) {
       this.fatal("Programa inválido: após a remoção de comentários, observei "
                  + "que o número de caracteres hexadecimais não é um múltiplo "
@@ -179,11 +174,11 @@ function mvn(programa_inicial, entradas, saidas) {
 
   // acesso a memória, produzindo warning
   this.acesso_seguro = function(endereco) {
-    if (endereco in memoria) return memoria[endereco];
-    this.warning("Tentativa de acessar um endereço não-inicializado (" + 
+    if (endereco in this.memoria) return this.memoria[endereco];
+    alert("CUIDADO! Tentativa de acessar um endereço não-inicializado (" + 
                   hexword(endereco) + ")!");
-    memoria[endereco] = new word(4);
-    return memoria[endereco];
+    this.memoria[endereco] = new word(4);
+    return this.memoria[endereco];
   };
 
   // acessa um registrador de maneira segura, retornando seu objeto
@@ -264,7 +259,7 @@ function mvn(programa_inicial, entradas, saidas) {
         break;
       case 0x9:
         // colocar acumulador pra memória
-        let mem = this.acesso_seguro(oi.us());
+        let memoi1 = this.acesso_seguro(oi.us());
         mem.set(this.reg("AC"));
         this.reg("IC").add(2);
         break;
@@ -275,7 +270,7 @@ function mvn(programa_inicial, entradas, saidas) {
         break;
       case 0xB:
         // AC recebe memória, IC recebe RA
-        let mem = this.acesso_seguro(oi.us());
+        let memoi2 = this.acesso_seguro(oi.us());
         this.reg("AC").set(mem);
         this.reg("IC").set(this.reg("RA"));
         break;
@@ -286,18 +281,18 @@ function mvn(programa_inicial, entradas, saidas) {
         break;
       case 0xD:
         // ler dados da entrada e continuar
-        let disp = oi.us();
-        if (disp >= this.entradas.length) {
-          this.fatal("Tentativa de ler um byte da entrada #" + disp + ", mas só"
+        let idisp = oi.us();
+        if (idisp >= this.entradas.length) {
+          this.fatal("Tentativa de ler um byte da entrada #" + idisp + ", mas só"
                      + " existe até a #" + this.entradas.length + "!");
         } else {
-          let entrada = this.entradas[disp];
+          let entrada = this.entradas[idisp];
           if (entrada.fila()) {
             this.reg("AC").set(entrada.ler());
             this.reg("IC").add(2);
           } else {
             alert("A instrução atual exige ler do dispositivo de entrada #"
-                  + disp + "!");
+                  + idisp + "!");
           }
         }
         break;
