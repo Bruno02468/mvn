@@ -32,10 +32,13 @@
           <br>
           Eu também procurei implementar mensagens de erro mais descritivas, e
           uma interface gráfica mais rica para facilitar o debug.
+          <br>
+          <br>
+          Aceito sugestões e código!
         </h6>
       </div>
-      <br>
       <div id="loader">
+        <hr>
         Para começar, cole seu programa abaixo!<br>
         <br>
         <textarea id="programa"></textarea><br>
@@ -47,6 +50,13 @@
         <br>
         Número de dispositivos de saída:
         <input type="number" min="0" step="1" value="3" id="nout"></input>
+        <br>
+        <br>
+        Versão da MVN (afeta opcodes A e B):
+        <select id="version">
+          <option value="2">Interpretador 2 - com RA</option>
+          <option value="1">Interpretador 1 - sem RA</option>
+        </select>
         <br>
         <br>
         <button onclick="carregar();">Carregar programa!</button><br>
@@ -71,7 +81,7 @@
 
         <div class="row">
           <div class="six columns regs">
-            Valores dos registradores:<br>
+            <h5><b>Registradores:</b><br></h5>
             <table class="tabela_registradores">
               <thead>
                 <th>Nome</th>
@@ -84,6 +94,7 @@
           </div>
 
           <div id="six columns">
+            <h5><b>Memória:</b><br></h5>
             <table class="tabela_memoria">
               <thead>
                 <th>Endereço</th>
@@ -95,13 +106,16 @@
             </table>
           </div>
 
-        </span>
+        </div>
+
 
         <hr>
         
         <div class="row">
           <div class="six columns sidebar">
-            Dispositivo de entrada: <select id="ins"></select>
+            <h5><b>Entrada:</b><br></h5>
+            Dispositivo de entrada:
+            <select id="ins" onchange="update_entrada();"></select>
             <br>
             <br>
             Dados na fila de entrada:
@@ -120,7 +134,9 @@
             <br>
           </div>
           <div class="six columns sidebar">
-            Dispositivo de saída: <select id="outs"></select> 
+            <h5><b>Saída:</b><br></h5>
+            Dispositivo de saída:
+            <select id="outs" onchange="update_saida();"></select>
             <br>
             <br>
             Dados na saída:
@@ -139,7 +155,7 @@
 
         <hr>
 
-      </div>
+      </span>
       <br>
       <br>
       <i>
@@ -149,11 +165,11 @@
         <br>
         Se você estiver interessado no código, ele é aberto sob a licença
         MIT, e está
-        <a href="https://github.com/Bruno02468/lista_fuvest"
+        <a href="https://github.com/Bruno02468/mvn/"
         target="_blank">num repositório do GitHub</a>!
         <br>
         <br>
-        © 2019
+        © 2020
         <a href="//oisumida.rs" target="_blank">Bruno Borges Paschoalinoto</a>
         <br>
         Alguns direitos reservados!

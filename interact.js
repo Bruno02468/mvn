@@ -75,7 +75,7 @@ function in_hex() {
                         "0000"), 16);
   } while (isNaN(s));
   backend.inserir(s);
-  backend.update_textarea();
+  update_entrada();
 }
 
 // carregar um valor decimal na entrada selecionada
@@ -86,19 +86,21 @@ function in_dec() {
     s = parseInt(prompt("Insira um número de 0 a 65535.", "0"), 10);
   } while (isNaN(s) || s > 65535 || s < 0);
   backend.inserir(s);
-  backend.update_textarea();
+  update_entrada();
 }
 
 // limpar o que está na fila da entrada selecionada
 function clr_in() {
   let backend = entrada_selecionada();
   backend.limpar();
+  update_entrada();
 }
 
 // limpar o display da saída selecionada
-function clr_in() {
+function clr_out() {
   let backend = saida_selecionada();
   backend.limpar();
+  update_saida();
 }
 
 // carregar o programa do usuário e instanciar a MVN
@@ -157,6 +159,8 @@ function mostrar_memoria() {
       td_char.innerText = "...";
     } else {
       td_addr.innerText = new word(4, addr).to_hex();
+      if (td_addr.innerText == maquina.reg("IC").to_hex())
+        tr.style.color = "green";
       td_hex.innerText = maquina.memoria[addr].to_hex();
       td_dec.innerText = maquina.memoria[addr].to_dec_tc();
       td_char.innerText = maquina.memoria[addr].to_char();
@@ -200,11 +204,11 @@ function atualizar_registradores() {
 }
 
 function atualizar_tudo() {
-  update_entrada();
-  update_saida();
   atualizar_estado();
   mostrar_memoria();
   atualizar_registradores();
+  update_entrada();
+  update_saida();
 }
 
 function step() {

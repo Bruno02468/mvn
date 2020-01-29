@@ -37,7 +37,7 @@ function entrada_generica() {
 
   // inserir um byte na fila de leitura
   this.inserir = function(b) {
-    this.mem.push(word(4, b));
+    this.mem.push(new word(4, b));
   };
 
   // inserir vários bytes
@@ -93,9 +93,10 @@ function saida_generica() {
 }
 
 // aqui, vamos começar a implementar a mvn de fato.
-function mvn(programa_inicial, entradas, saidas) {
+function mvn(programa_inicial, entradas, saidas, versao) {
   this.memoria = {};
   this.memoria_original = {};
+  this.versao = versao;
 
   this.fatal = function(msg) {
     alert("Um erro fatal impede a continuidade da execução:\n\n" + msg);
@@ -120,15 +121,15 @@ function mvn(programa_inicial, entradas, saidas) {
   // reiniciar o programa atual
   this.restart = function() {
     this.memoria = this.copia_memoria(this.memoria_original);
-    this.estado = "EXECUTANDO"
+    this.estado = "EXECUTANDO";
     this.registradores = {
       "MAR": new word(4),
       "MDR": new word(4),
       "IC": new word(4),
       "IR": new word(4),
       "AC": new word(4),
-      "RA": new word(4)
     };
+    if (versao == 2) this.registradores["RA"] = new word(4);
     for (entrada of entradas) {
       entrada.limpar(); 
     }
@@ -142,7 +143,7 @@ function mvn(programa_inicial, entradas, saidas) {
     this.restart();
     this.memoria = {};
     this.memoria_original = {};
-    this.estado = "PARADA"
+    this.estado = "PARADA";
   };
 
   // esta função vai tentar carregar um programa, na forma de texto, para a
@@ -170,6 +171,7 @@ function mvn(programa_inicial, entradas, saidas) {
     }
     // criar uma cópia do programa, para poder restartar
     this.memoria_original = this.copia_memoria();
+    this.estado = "EXECUTANDO";
   };
 
   // acesso a memória, produzindo warning
@@ -205,8 +207,9 @@ function mvn(programa_inicial, entradas, saidas) {
     }
     // pegar a instrução atual e atualizar os registradores
     this.reg("IR").set(this.acesso_seguro(this.reg("IC").us()));
-    let op = (this.ureg("IR") & 0xF000) >> 3;
+    let op = (this.ureg("IR") & 0xF000) >> 12;
     let oi = new word(4, this.ureg("IR") & 0x0FFF);
+    let memoi = this.acesso_seguro(oi.us());
     switch (op) {
       case 0x0:
         // salto incondicional
@@ -229,50 +232,56 @@ function mvn(programa_inicial, entradas, saidas) {
         break;
       case 0x4:
         // soma
-        let parcela = this.acesso_seguro(oi.us());
-        this.reg("AC").add(memoria[oi]);
+        this.reg("AC").add(memoi);
         this.reg("IC").add(2);
         break;
       case 0x5:
         // subtração
-        let subtraendo = this.acesso_seguro(oi.us());
-        this.reg("AC").sub(memoria[oi]);
+        this.reg("AC").sub(memoi);
         this.reg("IC").add(2);
         break;
       case 0x6:
         // multiplicação
-        let fator = this.acesso_seguro(oi.us());
-        this.reg("AC").mult(memoria[oi]);
+        this.reg("AC").mult(memoi);
         this.reg("IC").add(2);
         break;
       case 0x7:
         // divisão
-        let divisor = this.acesso_seguro(oi.us());
-        this.reg("AC").idiv(memoria[oi]);
+        this.reg("AC").idiv(memoi);
         this.reg("IC").add(2);
         break;
       case 0x8:
         // colocar memória pro acumulador
-        let mem = this.acesso_seguro(oi.us());
-        this.reg("AC").set(mem);
+        this.reg("AC").set(memoi);
         this.reg("IC").add(2);
         break;
       case 0x9:
         // colocar acumulador pra memória
-        let memoi1 = this.acesso_seguro(oi.us());
-        mem.set(this.reg("AC"));
+        memoi.set(this.reg("AC"));
         this.reg("IC").add(2);
         break;
       case 0xA:
-        // RA recebe IC, IC recebe OI
-        this.reg("RA").set(this.reg("IC"));
-        this.reg("IC").set(this.reg("OI"));
+        if (versao == 2) {
+          // RA recebe IC, IC recebe OI
+          this.reg("RA").set(this.reg("IC"));
+          this.reg("IC").set(oi);
+        } else {
+          // MEM[OI] recebe IC+1, IC recebe OI+1
+          memoi.set(this.reg("IC"));
+          memoi.add(2);
+          this.reg("IC").set(oi);
+          this.reg("IC").add(2);
+        }
         break;
       case 0xB:
-        // AC recebe memória, IC recebe RA
-        let memoi2 = this.acesso_seguro(oi.us());
-        this.reg("AC").set(mem);
-        this.reg("IC").set(this.reg("RA"));
+        if (versao == 2) {
+          // AC recebe memória, IC recebe RA
+          this.reg("AC").set(memoi);
+          this.reg("IC").set(this.reg("RA"));
+        } else {
+          // IC recebe MEM[OI]
+          this.reg("IC").set(memoi);
+        }
         break;
       case 0xC:
         // pausar e aguardar continuação

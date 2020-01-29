@@ -70,7 +70,7 @@ function word(order, value) {
 
   // somar um valor (positivo ou negativo), respeitando o complemento de dois
   this.add = function(n) {
-    if ("true_unsigned" in n) {
+    if (typeof n == "object") {
       this.add(n.tc());
     } else {
       this.true_unsigned += n;
@@ -80,7 +80,7 @@ function word(order, value) {
 
   // subtrair um valor (positivo ou negativo), respeitando o complemento de dois
   this.sub = function(n) {
-    if ("true_unsigned" in n) {
+    if (typeof n == "object") {
       this.sub(n.tc());
     } else {
       this.true_unsigned -= n;
@@ -90,8 +90,8 @@ function word(order, value) {
 
   // multiplica por um valor (positivo ou negativo)
   this.mult = function(n) {
-    if ("true_unsigned" in n) {
-      this.mult(v.tc());
+    if (typeof n == "object") {
+      this.mult(n.tc());
     } else {
       this.true_unsigned *= n;
     }
@@ -100,8 +100,8 @@ function word(order, value) {
 
   // divide por um valor (positivo ou negativo), deixando inteiro
   this.idiv = function(n) {
-    if ("true_unsigned" in n) {
-      this.mult(v.tc());
+    if (typeof n == "object") {
+      this.mult(n.tc());
     } else {
       this.true_unsigned = Math.round(this.true_unsigned / n);
     }
@@ -168,7 +168,7 @@ function word(order, value) {
 
   // bitwise XOR
   this.xor = function(mask) {
-    this.true_unsigned %= mask;
+    this.true_unsigned ^= mask;
     this.sane();
   };
 
@@ -187,7 +187,7 @@ function word(order, value) {
   };
 
   // cria uma cópia deste objeto
-  this.copy = () => new word(this.true_unsigned);
+  this.copy = () => new word(this.order, this.true_unsigned);
 
   // carregar o valor fornecido no construtor
   if (value) this.set(value);

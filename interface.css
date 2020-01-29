@@ -25,3 +25,8 @@ select {
 #estado {
   font-weight: bold;
 }
+
+#in_disp, #out_disp {
+  font-family: monospace;
+  vertical-align: middle;
+}
