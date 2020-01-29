@@ -205,6 +205,7 @@ function mvn(programa_inicial, entradas, saidas, versao) {
       alert("A máquina não pode continuar, pois está em estado de erro.");
       return;
     }
+    if (this.estado == "PARADA") return;
     this.estado = "EXECUTANDO";
     // pegar a instrução atual e atualizar os registradores
     this.reg("IR").set(this.acesso_seguro(this.reg("IC").us()));
@@ -286,7 +287,7 @@ function mvn(programa_inicial, entradas, saidas, versao) {
         break;
       case 0xC:
         // pausar e aguardar continuação
-        this.estado = "AGUARDANDO";
+        this.estado = "PARADA";
         this.reg("IC").set(oi);
         break;
       case 0xD:
