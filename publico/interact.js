@@ -221,6 +221,7 @@ function restart() {
   atualizar_tudo();
 }
 
+// auto-execução a 10 Hz
 let looper = null;
 function toggle_auto(btn) {
   if (!looper) {
@@ -232,3 +233,18 @@ function toggle_auto(btn) {
     btn.innerText = "Executar a 10 Hz";
   }
 }
+
+document.body.addEventListener("keypress", function(e) {
+  let c = String.fromCharCode(e.which).toUpperCase();
+  switch (c) {
+    case "N":
+      step();
+      break;
+    case "A":
+      toggle_auto();
+      break;
+    case "R":
+      restart();
+      break;
+  }
+});
