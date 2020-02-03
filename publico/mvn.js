@@ -309,17 +309,19 @@ function mvn(programa_inicial, entradas, saidas, versao) {
         }
         break;
       case 0xE:
+        // imprimir acumulador numa saída e continuar
         let disp = oi.us();
         if (disp >= this.saidas.length) {
           this.fatal("Tentativa de botar um byte na saída #" + disp + ", mas só"
                      + " existe até a #" + this.entradas.length + "!");
         } else {
-          let saida = this.saida[disp];
-          saida.inserir(disp);
+          let saida = this.saidas[disp];
+          saida.inserir(this.reg("AC"));
           this.reg("IC").add(2);
         }
         break;
       case 0xF:
+        // chamada de supervisor: por enquanto é um NOOP
         this.reg("IC").add(2);
         break;
     }

@@ -4,35 +4,6 @@
 // licença MIT
 // não repara a bagunça
 
-// dispositivo de saída usando elementos HTML
-function init_saida_combinada(ta_out, btn_clear, sel_type) {
-  let backend = saida_generica();
-
-  backend.update = function() {
-    switch (sel_type.value) {
-      case "hexa":
-        ta_out.innerText = backend.hexa();
-        break;
-      case "decimal":
-        ta_out.innerText = backend.decimal();
-        break;
-      case "ascii":
-        ta_out.innerText = backend.ascii();
-        break;
-    }
-  };
-
-  btn_clear.addEventListener("click", function() {
-    backend.limpar();
-  });
-
-  sel_type.addEventListener("change", function() {
-    backend.update();
-  });
-
-  return backend;
-}
-
 let maquina = null;
 let entradas = [];
 let saidas = [];
@@ -60,10 +31,10 @@ function update_entrada() {
 function update_saida() {
   let backend = saida_selecionada();
   let showable = backend.hexa();
-  let format = document.getElementById("in_format").value;
+  let format = document.getElementById("out_format").value;
   if (format == "decimal") showable = backend.decimal();
   else if (format == "ascii") showable = backend.ascii();
-  document.getElementById("in_disp").value = showable;
+  document.getElementById("out_disp").value = showable;
 }
 
 // carregar um valor hexadecimal na entrada selecionada
