@@ -60,6 +60,15 @@ function in_dec() {
   update_entrada();
 }
 
+// carregar um valor ASCII na entrada selecionada
+function in_ascii() {
+  let backend = entrada_selecionada();
+  let s = prompt("Digite uma string:", "")
+  for (let c of s.split(""))
+    backend.inserir(c.charCodeAt(0));
+  update_entrada();
+}
+
 // limpar o que está na fila da entrada selecionada
 function clr_in() {
   let backend = entrada_selecionada();
