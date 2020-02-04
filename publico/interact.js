@@ -22,8 +22,10 @@ function saida_selecionada() {
 function update_entrada() {
   let backend = entrada_selecionada();
   let showable = backend.hexa();
-  if (document.getElementById("in_format").value == "decimal")
-    showable = backend.decimal();
+  let format = document.getElementById("in_format").value;
+  document.getElementById("in_disp").value = showable;
+  if (format == "decimal") showable = backend.decimal();
+  else if (format == "ascii") showable = backend.ascii();
   document.getElementById("in_disp").value = showable;
 }
 
@@ -215,13 +217,14 @@ function toggle_auto(btn) {
 }
 
 document.body.addEventListener("keypress", function(e) {
+  if (!maquina) return;
   let c = String.fromCharCode(e.which).toUpperCase();
   switch (c) {
     case "N":
       step();
       break;
     case "A":
-      toggle_auto();
+      toggle_auto(document.getElementById("btn_auto"));
       break;
     case "R":
       restart();
