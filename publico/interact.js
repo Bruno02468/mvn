@@ -63,9 +63,13 @@ function in_dec() {
 // carregar um valor ASCII na entrada selecionada
 function in_ascii() {
   let backend = entrada_selecionada();
-  let s = prompt("Digite uma string:", "")
-  for (let c of s.split(""))
-    backend.inserir(c.charCodeAt(0));
+  let s = prompt("Digite uma string (número par de caracteres):", "")
+  if (s.length % 2) s = "\0" + s;
+  for (let i = 0; i < s.length - 1; i += 2) {
+    let high = s.charCodeAt(i) << 8;
+    let low = s.charCodeAt(i+1);
+    backend.inserir(high + low);
+  }
   update_entrada();
 }
 

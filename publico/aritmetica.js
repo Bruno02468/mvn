@@ -101,7 +101,7 @@ function word(order, value) {
   // divide por um valor (positivo ou negativo), deixando inteiro
   this.idiv = function(n) {
     if (typeof n == "object") {
-      this.mult(n.tc());
+      this.idiv(n.tc());
     } else {
       this.true_unsigned = Math.round(this.true_unsigned / n);
     }
@@ -149,10 +149,23 @@ function word(order, value) {
 
   // retorna o caractere correspondente a essa palavra
   this.to_char = function() {
-    var s = String.fromCharCode(this.us()).trim();
-    if (/[\x00-\x08\x0E-\x1F\x80-\xFF]/.test(s)) return "<invisível>";
+    let s = String.fromCharCode(this.us()).trim();
+    if (/[\x00-\x08\x0E-\x1F\x80-\xFF]/.test(s)) return "�";
     else return s;
   };
+
+  // retorna o grupo de caracteres correspondente a essa palavra em ascii
+  this.to_ascii = function() {
+    let hexstr = this.to_hex();
+    let s = "";
+    if (hexstr.length % 2) hexstr = "0" + hexstr;
+    for (let i = 0; i < hexstr.length - 1; i += 2) {
+      let c = String.fromCharCode(hexstr[i] + hexstr[i+1]);
+      if (/[\x00-\x08\x0E-\x1F\x80-\xFF]/.test(c)) s += "�";
+      else s += c;
+    }
+    return s;
+  }
 
   // bitwise AND
   this.and = function(mask) {

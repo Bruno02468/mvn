@@ -54,6 +54,10 @@ function entrada_generica() {
   this.decimal = function() {
     return this.mem.reduce((str, n) => str + n.to_dec() + " ", "").trim();
   };
+
+  this.ascii = function() {
+    return this.mem.reduce((str, n) => str + n.to_ascii(), "").trim();
+  }
 }
 
 
@@ -88,7 +92,7 @@ function saida_generica() {
 
   // converter em texto ascii
   this.ascii = function() {
-    return this.mem.reduce((str, n) => str + String.fromCharCode(n), "");
+    return this.mem.reduce((str, n) => str + n.to_ascii(), "");
   };
 }
 
