@@ -55,6 +55,7 @@ function entrada_generica() {
     return this.mem.reduce((str, n) => str + n.to_dec() + " ", "").trim();
   };
 
+  // converter em texto ascii
   this.ascii = function() {
     return this.mem.reduce((str, n) => str + n.to_ascii(), "").trim();
   }

@@ -71,7 +71,9 @@
             <button onclick="step();">Executar instrução (N)</button>
           </div>
           <div class="three columns">
-            <button onclick="toggle_auto(this);">Executar a 10 Hz (A)</button>
+            <button onclick="toggle_auto(this);" id="btn_auto">
+              Executar a 10 Hz (A)
+            </button>
           </div>
           <div class="three columns">
             <button onclick="restart();">Reiniciar a execução (R)</button>
@@ -132,6 +134,7 @@
             <select id="in_format" onchange="update_entrada();">
               <option value="hexa">Hexadecimal</option>
               <option value="decimal">Decimal</option>
+              <option value="ascii">Texto ASCII</option>
             </select><br>
             <br>
           </div>
@@ -150,7 +153,7 @@
             <select id="out_format" onchange="update_saida();">
               <option value="hexa">Hexadecimal</option>
               <option value="decimal">Decimal</option>
-              <option value="ASCII">ASCII</option>
+              <option value="ascii">Texto ASCII</option>
             </select><br>
           </div>
         </div>
