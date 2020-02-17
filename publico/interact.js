@@ -5,8 +5,12 @@
 // não repara a bagunça
 
 let maquina = null;
+let teclados = [];
+let monitores = [];
+let impressoras = [];
 let entradas = [];
 let saidas = [];
+let disco = null;
 
 // retorna a entrada selecionada
 function entrada_selecionada() {
@@ -91,26 +95,47 @@ function clr_out() {
 
 // carregar o programa do usuário e instanciar a MVN
 function carregar() {
-  // primeiro, instanciar as entradas e saídas
-  let ins = parseInt(document.getElementById("nin").value);
-  let outs = parseInt(document.getElementById("nout").value);
-  for (let i = 0; i < ins; i++) {
-    entradas.push(new entrada_generica());
+  // primeiro, instanciar as entradas, saídas, e disco
+  let tecs = parseInt(document.getElementById("ntec").value);
+  let mons = parseInt(document.getElementById("nmon").value);
+  let imps = parseInt(document.getElementById("nimp").value);
+
+  while (mons + imps) {
+    let nome = "???";
+    let arr = null;
+    if (mons) {
+      nome = "Monitor";
+      arr = monitores;
+      mons--;
+    } else {
+      nome = "Impressora";
+      arr = impressoras;
+      imps--;
+    }
+    let obj = new entrada_generica();
+    entradas.push(obj);
+    arr.push(obj);
     let opt = document.createElement("option");
-    opt.innerText = "#" + i;
-    opt.value = i;
+    opt.innerText = nome + " #" + arr.length;
+    opt.value = arr.length - 1;
     document.getElementById("ins").appendChild(opt);
   }
-  for (let i = 0; i < outs; i++) {
-    saidas.push(new saida_generica());
+
+  for (let i = 0; i < tecs; i++) {
+    teclados.push(new saida_generica());
     let opt = document.createElement("option");
-    opt.innerText = "#" + i;
+    opt.innerText = "Teclado #" + (i + 1);
     opt.value = i;
     document.getElementById("outs").appendChild(opt);
   }
+
+  saidas = teclados;
+  disco = new disco_generico();
+
   // agora, instanciar a mvn e carregar o programa
-  maquina = new mvn(document.getElementById("programa").value, entradas,
-                    saidas);
+  let prog = document.getElementById("programa").value;
+  let versao = parseInt(document.getElementById("versao").value);
+  maquina = new mvn(prog, teclados, monitores, impressoras, disco, versao);
   document.getElementById("loader").style.display = "none";
   document.getElementById("mvn").style.display = "block";
   atualizar_tudo();

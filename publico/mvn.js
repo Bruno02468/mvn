@@ -15,6 +15,10 @@ function entrada_generica() {
   // assegurar o elemento de leitura
   this.mem = [];
 
+  // propriedades
+  this.legivel = true;
+  this.escritivel = false;
+
   // tamanho da fila de leitura, em bytes
   this.fila = function() {
     return this.mem.length;
@@ -66,6 +70,10 @@ function entrada_generica() {
 function saida_generica() {
   this.mem = [];
 
+  // propriedades
+  this.legivel = false;
+  this.escritivel = true;
+
   // limpar a saída
   this.limpar = function() {
     this.mem = [];
@@ -97,8 +105,51 @@ function saida_generica() {
   };
 }
 
+// dispositivo que pode tanto ser lido quanto escrito (disco)
+function disco_generico() {
+  this.mem = [];
+
+  // oh yeah
+  this.legivel = true;
+  this.escritivel = false;
+
+  // zerar o disco (reinizialica)
+  this.limpar = function() {
+    this.mem = [];
+    for (let i = 0; i < 256; i++) this.mem.push(new word(4, 0));
+  };
+
+  // converter em string hexadecimal
+  this.hexa = function() {
+    return this.mem.reduce((str, n) => str + n.to_hex() + " ", "").trim();
+  };
+
+  // converter em string decimal
+  this.decimal = function() {
+    return this.mem.reduce((str, n) => str + n.to_dec() + " ", "").trim();
+  };
+
+  // converter em texto ascii
+  this.ascii = function() {
+    return this.mem.reduce((str, n) => str + n.to_ascii(), "");
+  };
+
+  // ler uma UL
+  this.acesso = function(ul) {
+    return this.mem[ul];
+  };
+
+  // sobrescrever uma UL
+  this.escrita = function(ul, w) {
+    this.mem[ul] = w.copy();
+  };
+
+  // inicializar limpando
+  this.limpar();
+}
+
 // aqui, vamos começar a implementar a mvn de fato.
-function mvn(programa_inicial, entradas, saidas, versao) {
+function mvn(prog_inicial, teclados, monitores, impressoras, disco, versao) {
   this.memoria = {};
   this.memoria_original = {};
   this.versao = versao;
@@ -217,6 +268,10 @@ function mvn(programa_inicial, entradas, saidas, versao) {
     let op = (this.ureg("IR") & 0xF000) >> 12;
     let oi = new word(4, this.ureg("IR") & 0x0FFF);
     let memoi = () => this.acesso_seguro(oi.us());
+    let thex = oi.to_hex()[1];
+    let tipo = parseInt(thex, 16);
+    let hl = oi.to_hex().slice(2, 4);
+    let ul = parseInt(hl, 16);
     switch (op) {
       case 0x0:
         // salto incondicional
@@ -296,34 +351,82 @@ function mvn(programa_inicial, entradas, saidas, versao) {
         this.reg("IC").set(oi);
         break;
       case 0xD:
-        // ler dados da entrada e continuar
-        let idisp = oi.us();
-        if (idisp >= this.entradas.length) {
-          this.fatal("Tentativa de ler um byte da entrada #" + idisp + ", mas só"
-                     + " existe até a #" + this.entradas.length + "!");
-        } else {
-          let entrada = this.entradas[idisp];
-          if (entrada.fila()) {
-            this.reg("AC").set(entrada.ler());
+        // ler dados de entrada e continuar
+        switch (tipo) {
+          case 0x0:
+            // teclado
+            if (ul >= this.teclados.length) {
+              this.fatal("Tentativa de ler de um teclado inexistente! (UL 0x"
+                + ul.to_hex() + ")");
+            } else {
+              let teclado = this.teclados[ul];
+              if (!teclado.fila()) {
+                alert("A instrução atual exige ler do teclado (UL 0x" + hl
+                  + "). Insira alguma coisa lá!");
+              } else {
+                this.reg("AC") = teclado.ler();
+                this.reg("IC").add(2);
+              }
+            }
+            break;
+          case 0x1:
+            // monitor
+            this.fatal("Tentativa de ler de um monitor! (UL 0x" + hl + ")");
+            break;
+          case 0x2:
+            // impressora
+            this.fatal("Tentativa de ler de uma impressora! (UL 0x" + hl + ")");
+            break;
+          case 0x3:
+            // disco
+            this.reg("AC") = this.disco.acesso(ul);
             this.reg("IC").add(2);
-          } else {
-            alert("A instrução atual exige ler do dispositivo de entrada #"
-                  + idisp + "!");
-            this.estado = "AGUARDANDO";
-          }
-        }
+            break;
+          default:
+            // wtf
+            this.fatal("Tentativa de ler de um dispositivo tipo \"" + thex
+              + "\"!");
+            break;
+        };
         break;
       case 0xE:
-        // imprimir acumulador numa saída e continuar
-        let disp = oi.us();
-        if (disp >= this.saidas.length) {
-          this.fatal("Tentativa de botar um byte na saída #" + disp + ", mas só"
-                     + " existe até a #" + this.entradas.length + "!");
-        } else {
-          let saida = this.saidas[disp];
-          saida.inserir(this.reg("AC"));
-          this.reg("IC").add(2);
-        }
+        // botar acumulador numa saída e continuar
+        switch (tipo) {
+          case 0x0:
+            // teclado
+            this.fatal("Tentativa de escrever num teclado! (UL 0x" + hl + ");");
+            break;
+          case 0x1:
+            // monitor
+            if (ul >= this.monitores.length) {
+              this.fatal("Tentativa de escrever num monitor inexistente! (UL 0x"
+                + hl + ")");
+            } else {
+              this.monitores[ul].inserir(this.reg("AC"));
+              this.reg("IC").add(2);
+            }
+            break;
+          case 0x2:
+            // impressora
+            if (ul >= this.impressoras.length) {
+              this.fatal("Tentativa de escrever numa impressora inexistente!"
+                + " (UL 0x" + hl + ")");
+            } else {
+              this.impressoras[ul].inserir(this.reg("AC"));
+              this.reg("IC").add(2);
+            }
+            break;
+          case 0x3:
+            // disco
+            this.disco.escrita(ul, this.reg("AC"));
+            this.reg("IC").add(2);
+            break;
+          default:
+            // wtf
+            this.fatal("Tentativa de escrever num dispositivo tipo \"" + tipo
+              + "\"!");
+            break;
+        };
         break;
       case 0xF:
         // chamada de supervisor: por enquanto é um NOOP
@@ -332,7 +435,10 @@ function mvn(programa_inicial, entradas, saidas, versao) {
     }
   };
 
-  this.entradas = entradas;
-  this.saidas = saidas;
-  this.carregar(programa_inicial);
+  // carregar os dados fornecidos no construtor
+  this.teclados = teclados;
+  this.monitores = monitores;
+  this.impressoras = impressoras;
+  this.disco = disco;
+  this.carregar(prog_inicial);
 } 

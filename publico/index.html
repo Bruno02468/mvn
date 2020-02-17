@@ -6,7 +6,7 @@
     <meta name="description" content="Simulador Web da MVN">
     <meta name="author" content="Bruno Borges Paschoalinoto">
     <title>Simulador Web da MVN</title>
-    <link href="//fonts.googleapis.com/css?family=raleway:400,300,600"
+    <link href="//fonts.googleapis.com/css?family=Raleway:400,300,600"
     rel="stylesheet" type="text/css">
     <link rel="stylesheet" type="text/css"
     href="//cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
@@ -41,20 +41,23 @@
         <br>
         <textarea id="programa"></textarea><br>
         <br>
-        <br>
-        Número de dispositivos de entrada:
-        <input type="number" min="0" step="1" value="3" id="nin"></input>
-        <br>
-        <br>
-        Número de dispositivos de saída:
-        <input type="number" min="0" step="1" value="3" id="nout"></input>
-        <br>
-        <br>
         Versão da MVN (afeta opcodes A e B):
-        <select id="version">
-          <option value="2">Interpretador 2 - com RA</option>
+        <select id="versao">
           <option value="1">Interpretador 1 - sem RA</option>
+          <option value="2">Interpretador 2 - com RA</option>
         </select>
+        <br>
+        <br>
+        Número de teclados:
+        <input type="number" min="0" step="1" value="1" id="ntec"></input>
+        <br>
+        <br>
+        Número de monitores:
+        <input type="number" min="0" step="1" value="1" id="nmon"></input>
+        <br>
+        <br>
+        Número de impressoras:
+        <input type="number" min="0" step="1" value="1" id="nimp"></input>
         <br>
         <br>
         <button onclick="carregar();">Carregar programa!</button><br>
@@ -159,6 +162,15 @@
         </div>
 
         <hr>
+        
+        <div class="row">
+          <div class="twelve columns sidebar">
+            <h5><b>Disco:</b><br></h5>
+            Setor do disco:
+          </div>
+        </div>
+
+        <hr>
 
       </span>
       <br>
@@ -168,8 +180,8 @@
         <a href="mailto:bruno@oisumida.rs">bruno@oisumida.rs</a>
         ou via issue no GitHub.
         <br>
-        Se você estiver interessado no código, ele é aberto sob a licença
-        MIT, e está
+        Se você estiver interessado no código, ele é aberto sob a licença MIT, e
+        está
         <a href="https://github.com/Bruno02468/mvn/"
         target="_blank">num repositório do GitHub</a>!
         <br>
