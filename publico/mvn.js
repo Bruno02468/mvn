@@ -119,21 +119,6 @@ function disco_generico() {
     for (let i = 0; i < 256; i++) this.mem.push(new word(4, 0));
   };
 
-  // converter em string hexadecimal
-  this.hexa = function() {
-    return this.mem.reduce((str, n) => str + n.to_hex() + " ", "").trim();
-  };
-
-  // converter em string decimal
-  this.decimal = function() {
-    return this.mem.reduce((str, n) => str + n.to_dec() + " ", "").trim();
-  };
-
-  // converter em texto ascii
-  this.ascii = function() {
-    return this.mem.reduce((str, n) => str + n.to_ascii(), "");
-  };
-
   // ler uma UL
   this.acesso = function(ul) {
     return this.mem[ul];
@@ -361,8 +346,11 @@ function mvn(prog_inicial, teclados, monitores, impressoras, disco, versao) {
             } else {
               let teclado = this.teclados[ul];
               if (!teclado.fila()) {
-                alert("A instrução atual exige ler do teclado (UL 0x" + hl
-                  + "). Insira alguma coisa lá!");
+                // esse alert causa spam durante execução automática, depois eu
+                // implemento algo que presta...
+                //
+                //alert("A instrução atual exige ler do teclado (UL 0x" + hl
+                //  + "). Insira alguma coisa lá!");
               } else {
                 this.reg("AC") = teclado.ler();
                 this.reg("IC").add(2);

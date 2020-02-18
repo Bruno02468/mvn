@@ -113,23 +113,23 @@ function carregar() {
       imps--;
     }
     let obj = new entrada_generica();
-    entradas.push(obj);
+    saidas.push(obj);
     arr.push(obj);
     let opt = document.createElement("option");
-    opt.innerText = nome + " #" + arr.length;
+    opt.innerText = nome + " #" + (arr.length - 1);
     opt.value = arr.length - 1;
-    document.getElementById("ins").appendChild(opt);
+    document.getElementById("outs").appendChild(opt);
   }
 
   for (let i = 0; i < tecs; i++) {
     teclados.push(new saida_generica());
     let opt = document.createElement("option");
-    opt.innerText = "Teclado #" + (i + 1);
+    opt.innerText = "Teclado #" + i;
     opt.value = i;
-    document.getElementById("outs").appendChild(opt);
+    document.getElementById("ins").appendChild(opt);
   }
 
-  saidas = teclados;
+  entradas = teclados;
   disco = new disco_generico();
 
   // agora, instanciar a mvn e carregar o programa
@@ -170,11 +170,13 @@ function mostrar_memoria() {
       td_char.innerText = "...";
     } else {
       td_addr.innerText = new word(4, addr).to_hex();
-      if (td_addr.innerText == maquina.reg("IC").to_hex())
+      if (td_addr.innerText == maquina.reg("IC").to_hex()) {
         tr.style.color = "green";
+        tr.style.fontWeight = "bold";
+      }
       td_hex.innerText = maquina.memoria[addr].to_hex();
       td_dec.innerText = maquina.memoria[addr].to_dec_tc();
-      td_char.innerText = maquina.memoria[addr].to_char();
+      td_char.innerText = maquina.memoria[addr].to_ascii();
     }
     tr.appendChild(td_addr);
     tr.appendChild(td_hex);
@@ -211,11 +213,30 @@ function atualizar_registradores() {
     tr.appendChild(td_char);
     tb.appendChild(tr);
   }
+}
 
+function atualizar_disco() {
+  let high = document.getElementById("sector").value;
+  let formato = document.getElementById("formato_disco").value;
+  let addr = new word(3);
+  for (let lows = 0x00; lows <= 0xFF; lows++) {
+    let hlows = new word(2, lows).to_hex();
+    addr.load_hex(high + hlows);
+    let value = disco.acesso(addr.us());
+    let elem = document.getElementById("disco_ul_" + hlows);
+    let texto = value.to_hex();
+    if (formato == "decimal") {
+      texto = value.tc();
+    } else if (formato == "ascii") {
+      texto = value.to_ascii();
+    }
+    elem.innerText = texto;
+  }
 }
 
 function atualizar_tudo() {
   atualizar_estado();
+  atualizar_disco();
   mostrar_memoria();
   atualizar_registradores();
   update_entrada();
@@ -245,6 +266,7 @@ function toggle_auto(btn) {
   }
 }
 
+// ativar os atalhos de teclado
 document.body.addEventListener("keypress", function(e) {
   if (!maquina) return;
   let c = String.fromCharCode(e.which).toUpperCase();
@@ -260,3 +282,32 @@ document.body.addEventListener("keypress", function(e) {
       break;
   }
 });
+
+// preencher as coisas do visualizador de disco
+let sec_sel = document.getElementById("sector");
+let sec_th = document.getElementById("th_disco");
+let sec_tb = document.getElementById("disco");
+for (let i = 0x0; i <= 0xF; i++) {
+  // primeiro, a seleção de setor
+  let sec_opt = document.createElement("option");
+  let hex = new word(1, i).to_hex();
+  sec_opt.innerText = hex + "00 - " + hex + "FF";
+  sec_opt.value = hex;
+  sec_sel.appendChild(sec_opt);
+  // agora, umas coisas no thead
+  let extra_th = document.createElement("td");
+  extra_th.innerText = hex;
+  sec_th.appendChild(extra_th);
+  // e preparar cada linha da tabela também
+  let dlinha = document.createElement("tr");
+  let primeiro_td = document.createElement("td");
+  primeiro_td.innerText = hex;
+  dlinha.appendChild(primeiro_td);
+  for (let j = 0x0; j <= 0xF; j++) {
+    let mais_um_td = document.createElement("td");
+    let ultimo_hex = new word(1, j).to_hex();
+    mais_um_td.id = "disco_ul_" + hex + ultimo_hex;
+    dlinha.appendChild(mais_um_td);
+  }
+  sec_tb.appendChild(dlinha);
+}

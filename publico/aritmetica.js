@@ -160,7 +160,7 @@ function word(order, value) {
     let s = "";
     if (hexstr.length % 2) hexstr = "0" + hexstr;
     for (let i = 0; i < hexstr.length - 1; i += 2) {
-      let c = String.fromCharCode(hexstr[i] + hexstr[i+1]);
+      let c = String.fromCharCode(parseInt(hexstr[i] + hexstr[i+1], 16));
       if (/[\x00-\x08\x0E-\x1F\x80-\xFF]/.test(c)) s += "�";
       else s += c;
     }

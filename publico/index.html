@@ -164,9 +164,25 @@
         <hr>
         
         <div class="row">
-          <div class="twelve columns sidebar">
+          <div class="twelve columns center">
             <h5><b>Disco:</b><br></h5>
             Setor do disco:
+            <select id="sector"></select>
+            <br>
+            <br>
+            Mostrar como:
+            <select id="formato_disco" onchange="atualizar_disco();">
+              <option value="hexa">Hexadecimal</option>
+              <option value="decimal">Decimal</option>
+              <option value="ascii">Texto ASCII</option>
+            </select><br>
+            <br>
+            <table id="tabela_disco">
+              <thead>
+              </thead>
+              <tbody id="disco">
+                <tr id="th_disco"><td>---</td></tr>
+            </table>
           </div>
         </div>
 
