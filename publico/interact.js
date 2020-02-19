@@ -122,7 +122,7 @@ function carregar() {
   }
 
   for (let i = 0; i < tecs; i++) {
-    teclados.push(new saida_generica());
+    teclados.push(new entrada_generica());
     let opt = document.createElement("option");
     opt.innerText = "Teclado #" + i;
     opt.value = i;

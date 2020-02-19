@@ -352,7 +352,7 @@ function mvn(prog_inicial, teclados, monitores, impressoras, disco, versao) {
                 //alert("A instrução atual exige ler do teclado (UL 0x" + hl
                 //  + "). Insira alguma coisa lá!");
               } else {
-                this.reg("AC") = teclado.ler();
+                this.reg("AC").set(teclado.ler());
                 this.reg("IC").add(2);
               }
             }
