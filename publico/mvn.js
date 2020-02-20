@@ -116,11 +116,13 @@ function disco_generico() {
   // zerar o disco (reinizialica)
   this.limpar = function() {
     this.mem = [];
-    for (let i = 0; i < 256; i++) this.mem.push(new word(4, 0));
+    for (let ul = 0x000; ul <= 0xFFF; ul++) this.mem.push(new word(4, 0));
   };
 
   // ler uma UL
   this.acesso = function(ul) {
+    if (ul >= this.mem.length) alert("Acesso ilegal ao disco! (UL "
+      + new word(3, ul).to_hex() + ")");
     return this.mem[ul];
   };
 
@@ -129,8 +131,48 @@ function disco_generico() {
     this.mem[ul] = w.copy();
   };
 
+  // transformar em texto "legível"
+  this.encode = function() {
+    let s = "";
+    for (let ul = 0x000; ul <= 0xFFF; ul++) {
+      s += this.acesso(ul).to_hex();
+      if (ul % 0x10 == 0xF) s += "\n\n";
+      else s += "  ";
+      if (ul % 0x100 == 0xFF) s += "\n\n";
+    }
+    return s;
+  };
+
+  // baixar como arquivo
+  this.download = function() {
+    let datatype = "data:text/plain;charset=utf-8;base64,"
+    let link = document.createElement("a");
+    link.href = datatype + btoa(this.encode());
+    link.download = "disco.txt";
+    link.click();
+  };
+
+  // carregar arquivo
+  this.loads = function(s) {
+    // checar integridade
+    s = s.toUpperCase();
+    s = s.replace(/[^0123456789ABCDEF]/g, "");
+    if (s.length != 16384) {
+      alert("Esse arquivo está corrompido! =(");
+      return;
+    }
+    this.mem = [];
+    for (let si = 0; si < s.length; si += 4) {
+      let hex = s.substr(si, 4);
+      let w = new word(4);
+      w.load_hex(hex);
+      this.mem.push(w);
+    }
+  };
+
   // inicializar limpando
   this.limpar();
+
 }
 
 // aqui, vamos começar a implementar a mvn de fato.

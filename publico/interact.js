@@ -234,6 +234,12 @@ function atualizar_disco() {
   }
 }
 
+function carregar_disco() {
+  let s = prompt("Cole o conteúdo do arquivo abaixo:");
+  if (s) maquina.disco.loads(s);
+  atualizar_disco();
+}
+
 function atualizar_tudo() {
   atualizar_estado();
   atualizar_disco();

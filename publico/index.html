@@ -119,7 +119,7 @@
         
         <div class="row">
           <div class="six columns sidebar">
-            <h5><b>Entrada:</b><br></h5>
+            <h5><b>Entradas:</b><br></h5>
             Dispositivo de entrada:
             <select id="ins" onchange="update_entrada();"></select>
             <br>
@@ -142,7 +142,7 @@
             <br>
           </div>
           <div class="six columns sidebar">
-            <h5><b>Saída:</b><br></h5>
+            <h5><b>Saídas:</b><br></h5>
             Dispositivo de saída:
             <select id="outs" onchange="update_saida();"></select>
             <br>
@@ -176,6 +176,14 @@
               <option value="decimal">Decimal</option>
               <option value="ascii">Texto ASCII</option>
             </select><br>
+            <br>
+            <button onclick="maquina.disco.download();">
+              Baixar disco como .txt
+            </button>
+            <button onclick="carregar_disco();">
+              Carregar disco a partir de um .txt
+            </button>
+            <br>
             <br>
             <table id="tabela_disco">
               <thead>
