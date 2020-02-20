@@ -240,6 +240,10 @@ function carregar_disco() {
   atualizar_disco();
 }
 
+function mostrar_disco() {
+  prompt("Eis o conteúdo do disco:", maquina.disco.encode());
+}
+
 function atualizar_tudo() {
   atualizar_estado();
   atualizar_disco();
