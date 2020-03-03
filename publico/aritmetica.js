@@ -103,7 +103,7 @@ function word(order, value) {
     if (typeof n == "object") {
       this.idiv(n.tc());
     } else {
-      this.true_unsigned = Math.round(this.true_unsigned / n);
+      this.true_unsigned = Math.floor(this.true_unsigned / n);
     }
     this.sane();
   };
