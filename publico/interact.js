@@ -12,6 +12,8 @@ let entradas = [];
 let saidas = [];
 let disco = null;
 
+let disco_ul = document.getElementById("disco_ul");
+
 // retorna a entrada selecionada
 function entrada_selecionada() {
   return entradas[parseInt(document.getElementById("ins").value)];
@@ -216,22 +218,14 @@ function atualizar_registradores() {
 }
 
 function atualizar_disco() {
-  let high = document.getElementById("sector").value;
-  let formato = document.getElementById("formato_disco").value;
-  let addr = new word(3);
-  for (let lows = 0x00; lows <= 0xFF; lows++) {
-    let hlows = new word(2, lows).to_hex();
-    addr.load_hex(high + hlows);
-    let value = disco.acesso(addr.us());
-    let elem = document.getElementById("disco_ul_" + hlows);
-    let texto = value.to_hex();
-    if (formato == "decimal") {
-      texto = value.tc();
-    } else if (formato == "ascii") {
-      texto = value.to_ascii();
-    }
-    elem.innerText = texto;
-  }
+  let ul = parseInt(disco_ul.value, 16);
+  let format = document.getElementById("formato_disco").value;
+  let arquivo = disco.arquivo(ul);
+  let showable = arquivo.hexa();
+  if (format == "decimal") showable = arquivo.decimal();
+  else if (format == "ascii") showable = arquivo.ascii();
+  document.getElementById("out_disco").value = showable;
+
 }
 
 function carregar_disco() {
@@ -294,30 +288,10 @@ document.body.addEventListener("keypress", function(e) {
 });
 
 // preencher as coisas do visualizador de disco
-let sec_sel = document.getElementById("sector");
-let sec_th = document.getElementById("th_disco");
-let sec_tb = document.getElementById("disco");
-for (let i = 0x0; i <= 0xF; i++) {
-  // primeiro, a seleção de setor
-  let sec_opt = document.createElement("option");
-  let hex = new word(1, i).to_hex();
-  sec_opt.innerText = hex + "00 - " + hex + "FF";
-  sec_opt.value = hex;
-  sec_sel.appendChild(sec_opt);
-  // agora, umas coisas no thead
-  let extra_th = document.createElement("td");
-  extra_th.innerText = hex;
-  sec_th.appendChild(extra_th);
-  // e preparar cada linha da tabela também
-  let dlinha = document.createElement("tr");
-  let primeiro_td = document.createElement("td");
-  primeiro_td.innerText = hex;
-  dlinha.appendChild(primeiro_td);
-  for (let j = 0x0; j <= 0xF; j++) {
-    let mais_um_td = document.createElement("td");
-    let ultimo_hex = new word(1, j).to_hex();
-    mais_um_td.id = "disco_ul_" + hex + ultimo_hex;
-    dlinha.appendChild(mais_um_td);
-  }
-  sec_tb.appendChild(dlinha);
+for (let i = 0x00; i <= 0xFF; i++) {
+  let opt = document.createElement("option");
+  let hul = new word(2, i).to_hex();
+  opt.innerText = "Arquivo #" + hul;
+  opt.value = hul;
+  disco_ul.appendChild(opt);
 }

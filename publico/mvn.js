@@ -84,11 +84,6 @@ function saida_generica() {
     this.mem.push(new word(4, b));
   };
 
-  // inserir vários bytes
-  this.inserir_varios = function(arr) {
-    this.mem += arr;
-  };
-
   // converter em string hexadecimal
   this.hexa = function() {
     return this.mem.reduce((str, n) => str + n.to_hex() + " ", "").trim();
@@ -105,55 +100,112 @@ function saida_generica() {
   };
 }
 
-// dispositivo que pode tanto ser lido quanto escrito (disco)
-function disco_generico() {
+// dispositivo virtual que representa um arquivo, uma vez lido
+function arquivo_generico() {
   this.mem = [];
+  this.indice_leitura = 0;
 
   // oh yeah
   this.legivel = true;
-  this.escritivel = false;
+  this.escritivel = true;
+
+  // limpar a fila de leitura
+  this.limpar = function() {
+    this.mem = [];
+    this.indice_leitura = 0;
+  };
+
+  // resetar o índice
+  this.voltar = function() {
+    this.indice_leitura = 0;
+  };
+
+  // garantir a sanidade do índice de leitura
+  this.sane = function() {
+    if (this.mem.length) {
+      this.indice_leitura %= this.mem.length;
+    } else {
+      this.indice_leitura = 0;
+    }
+  }
+
+  // inserir um byte na fila de leitura
+  this.inserir = function(b) {
+    this.mem.push(new word(4, b));
+  };
+
+  // ler um e avançar
+  this.ler = function() {
+    if (!this.mem.length) return new word(4);
+    let w = this.mem[this.indice_leitura].copy();
+    this.indice_leitura++;
+    this.sane();
+    return w.copy();
+  };
+
+  // converter em string hexadecimal
+  this.hexa = function() {
+    return this.mem.reduce((str, n) => str + n.to_hex() + " ", "").trim();
+  };
+
+  // converter em string decimal
+  this.decimal = function() {
+    return this.mem.reduce((str, n) => str + n.to_dec() + " ", "").trim();
+  };
+
+  // converter em texto ascii
+  this.ascii = function() {
+    return this.mem.reduce((str, n) => str + n.to_ascii(), "").trim();
+  }
+}
+
+// dispositivo que pode tanto ser lido quanto escrito (disco)
+function disco_generico() {
+  this.arquivos = [];
+
+  // oh yeah
+  this.legivel = true;
+  this.escritivel = true;
 
   // zerar o disco (reinizialica)
   this.limpar = function() {
-    this.mem = [];
-    for (let ul = 0x000; ul <= 0xFFF; ul++) this.mem.push(new word(4, 0));
-  };
-
-  // ler uma UL
-  this.acesso = function(ul) {
-    if (ul >= this.mem.length) alert("Acesso ilegal ao disco! (UL "
-      + new word(3, ul).to_hex() + ")");
-    return this.mem[ul];
-  };
-
-  // sobrescrever uma UL
-  this.escrita = function(ul, w) {
-    this.mem[ul] = w.copy();
-  };
-
-  // transformar em texto "legível"
-  this.encode = function() {
-    let s = "";
-    for (let ul = 0x000; ul <= 0xFFF; ul++) {
-      s += this.acesso(ul).to_hex();
-      if (ul % 0x10 == 0xF) s += "\n\n";
-      else s += "  ";
-      if (ul % 0x100 == 0xFF) s += "\n\n";
+    this.arquivos = [];
+    for (let i = 0x00; i <= 0xFF; i++) {
+      this.arquivos.push(new arquivo_generico());
     }
-    return s;
   };
+
+  // obter um arquivo
+  this.arquivo = function(ul) {
+    if (ul >= this.arquivos.length) alert("Acesso ilegal ao disco! (UL "
+      + new word(3, ul).to_hex() + ")");
+    return this.arquivos[ul];
+  };
+
+  // escreve num arquivo
+  this.escrita = function(ul, w) {
+    let arq = this.arquivo(ul);
+    arq.inserir(w.copy());
+  };
+
+  // lê um de um arquivo
+  this.acesso = function(ul) {
+    let arq = this.arquivo(ul);
+    return arq.ler();
+  }
 
   // baixar como arquivo
-  this.download = function() {
+  this.download = function(ul) {
     let datatype = "data:text/plain;charset=utf-8;base64,"
     let link = document.createElement("a");
-    link.href = datatype + btoa(this.encode());
-    link.download = "disco.txt";
+    link.href = datatype + btoa(this.acesso(ul).hexa());
+    let hul = new word(2, ul).to_hex();
+    link.download = "disco_ul_" + hul + ".txt";
     link.click();
   };
 
   // carregar arquivo
-  this.loads = function(s) {
+  this.loads = function(s, ul) {
     // checar integridade
     s = s.toUpperCase();
     s = s.replace(/[^0123456789ABCDEF]/g, "");
@@ -161,18 +213,17 @@ function disco_generico() {
       alert("Esse arquivo está corrompido! =(");
       return;
     }
-    this.mem = [];
+    this.arquivo(ul).limpar();
     for (let si = 0; si < s.length; si += 4) {
       let hex = s.substr(si, 4);
       let w = new word(4);
       w.load_hex(hex);
-      this.mem.push(w);
+      this.escrita(ul, w);
     }
   };
 
   // inicializar limpando
   this.limpar();
-
 }
 
 // aqui, vamos começar a implementar a mvn de fato.
